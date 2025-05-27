@@ -2,6 +2,7 @@ package com.example.supabase_auth.controller;
 
 import com.example.supabase_auth.AppUser;
 import com.example.supabase_auth.UserRepository;
+import com.example.supabase_auth.service.FileUploadService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
@@ -23,6 +26,10 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private FileUploadService fileUploadService;
+
 
     private final Map<String, String> otpStorage = new ConcurrentHashMap<>();
     private final Map<String, String> emailToOtpMap = new ConcurrentHashMap<>();
@@ -268,4 +275,14 @@ public class AuthController {
                 "message", "Logged out successfully"
         ));
     }
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+        try {
+            String fileUrl = fileUploadService.uploadFile(file);
+            return ResponseEntity.ok(fileUrl);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("File upload failed");
+        }
+    }
+
 }
