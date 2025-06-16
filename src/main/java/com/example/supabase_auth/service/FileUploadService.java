@@ -1,37 +1,39 @@
 package com.example.supabase_auth.service;
 
-
-
+import com.example.supabase_auth.entity.UploadedFile;
+import com.example.supabase_auth.repository.UploadedFileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @Service
 public class FileUploadService {
 
     @Autowired
-    private S3Client s3Client;
+    private BackblazeUploader backblazeUploader;
 
-    private final String bucketName = "myapplication-uploads";
+    @Autowired
+    private UploadedFileRepository uploadedFileRepository;
 
     public String uploadFile(MultipartFile file) throws IOException {
-        String key = file.getOriginalFilename();
+        String fileUrl = backblazeUploader.upload(file);
 
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .contentType(file.getContentType())
-                .build();
+        UploadedFile uploadedFile = new UploadedFile();
+        uploadedFile.setFileName(file.getOriginalFilename());
+        uploadedFile.setFileUrl(fileUrl);
+        uploadedFile.setFileType(file.getContentType());
+        uploadedFile.setTranscriptGenerated(false);
+        uploadedFile.setUploadedAt(LocalDateTime.now());
 
-        s3Client.putObject(putObjectRequest, software.amazon.awssdk.core.sync.RequestBody.fromBytes(file.getBytes()));
-
-        return s3Client.utilities().getUrl(b -> b.bucket(bucketName).key(key)).toExternalForm();
-
-
+        uploadedFileRepository.save(uploadedFile);
+        return fileUrl;
     }
 }
+
+
+
+
 

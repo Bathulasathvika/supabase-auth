@@ -1,5 +1,6 @@
-package com.example.supabase_auth;
+package com.example.supabase_auth.repository;
 
+import com.example.supabase_auth.entity.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,7 +1,7 @@
 package com.example.supabase_auth.controller;
 
-import com.example.supabase_auth.AppUser;
-import com.example.supabase_auth.UserRepository;
+import com.example.supabase_auth.entity.AppUser;
+import com.example.supabase_auth.repository.UserRepository;
 import com.example.supabase_auth.service.FileUploadService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,13 +45,13 @@ public class AuthController {
                 ));
             }
 
-            user.setVerified(false);
+
             userRepository.save(user);
-            
+
 
             return ResponseEntity.ok(Map.of(
                     "status", "success",
-                    "message", "Signup successful. Please verify via OTP."
+                    "message", "Signup successful."
             ));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of(
@@ -74,17 +74,10 @@ public class AuthController {
                 ));
             }
 
-            if (!user.get().isVerified()) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                        "status", "error",
-                        "message", "Account not verified. Please verify via OTP."
-                ));
-            }
-
             return ResponseEntity.ok(Map.of(
                     "status", "success",
-                    "message", "Login successful",
-                    "user", user.get()
+                    "message", "Login successful"
+
             ));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of(
@@ -135,18 +128,16 @@ public class AuthController {
 
             Optional<AppUser> user = userRepository.findByEmail(email);
             if (user.isPresent()) {
-                user.get().setVerified(true);
                 userRepository.save(user.get());
 
                 return ResponseEntity.ok(Map.of(
                         "status", "success",
-                        "message", "OTP verified. Account activated.",
-                        "user", user.get()
+                        "message", "OTP verified. Account activated."
+
                 ));
             } else {
                 AppUser newUser = new AppUser();
                 newUser.setEmail(email);
-                newUser.setVerified(true);
                 userRepository.save(newUser);
 
                 return ResponseEntity.ok(Map.of(
@@ -190,7 +181,6 @@ public class AuthController {
                 AppUser newUser = new AppUser();
                 newUser.setEmail(email);
                 newUser.setName(oauthUser.getAttribute("name"));
-                newUser.setVerified(true);
                 userRepository.save(newUser);
                 user = Optional.of(newUser);
             }
@@ -275,6 +265,7 @@ public class AuthController {
                 "message", "Logged out successfully"
         ));
     }
+
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
@@ -286,3 +277,4 @@ public class AuthController {
     }
 
 }
+
