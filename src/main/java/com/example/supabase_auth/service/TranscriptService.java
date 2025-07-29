@@ -14,8 +14,7 @@ public class TranscriptService {
     private UploadedFileRepository uploadedFileRepository;
 
     public String generateTranscripts(String fileUrl, String fileType) {
-        // Implement actual transcript generation logic here
-        // For now, just return a dummy transcript
+
         return "Sample transcript for file: " + fileUrl;
     }
 }
